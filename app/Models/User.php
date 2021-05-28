@@ -6,6 +6,8 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\UserRole;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -17,9 +19,14 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name',
+        'firstname',
+        'lastname',
+        'user_type_id',
+        'gender',
+        'status',
         'email',
         'password',
+        'created_date'
     ];
 
     /**
@@ -40,4 +47,27 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * The roles that belong to the user.
+     */
+    public function schedules()
+    {
+        return $this->belongsToMany(Schedule::class, 'user_schedules');
+    }
+
+    public function hasRole($role)
+    {
+        $hasRole = DB::select("SELECT * FROM `user_roles` 
+        INNER JOIN roles ON user_roles.role_id = roles.id
+        where user_roles.user_id = $this->id 
+        AND roles.roles = '$role'");
+
+        if(empty($hasRole)){
+            return false;
+        }else{
+            return true;
+        }
+        
+    }
 }
